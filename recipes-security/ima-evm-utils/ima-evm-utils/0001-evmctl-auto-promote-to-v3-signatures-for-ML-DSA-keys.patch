@@ -1,0 +1,60 @@
+From baa4c2c79db54d57985645105ff59c425200490e Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Tue, 14 Apr 2026 14:02:39 +0200
+Subject: [PATCH] evmctl: auto-promote to v3 signatures for ML-DSA keys
+
+ML-DSA keys cannot be used with v2 signatures because ML-DSA does not
+use hash-then-sign. Detect ML-DSA key type after option parsing and
+automatically switch to v3 signing instead of requiring --v3 flag
+
+Yocto's ima-evm-rootfs.bbclass only supports v2 signatures by default
+so this auto-promotion avoids patching the build system
+
+Upstream-Status: Inappropriate [Yocto-specific workaround]
+
+Signed-off-by: Ayoub Zaki <ayoub.zaki@embetrix.com>
+---
+ src/evmctl.c | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+diff --git a/src/evmctl.c b/src/evmctl.c
+index 44b52f6..31c9d2d 100644
+--- a/src/evmctl.c
++++ b/src/evmctl.c
+@@ -3410,6 +3410,34 @@ int main(int argc, char *argv[])
+ 			goto error;
+ 	}
+ 
++	/* Auto-detect ML-DSA keys and promote to v3 signatures.
++	 * ML-DSA does not use hash-then-sign so v2 signatures cannot
++	 * be created with these keys.
++	 */
++#if OPENSSL_VERSION_NUMBER >= 0x30500000
++	if (g_signature_version == SIGNATURE_V2 &&
++	    imaevm_params.keyfile != NULL) {
++		FILE *fp;
++		EVP_PKEY *tmpkey = NULL;
++
++		fp = fopen(imaevm_params.keyfile, "r");
++		if (fp) {
++			tmpkey = PEM_read_PrivateKey(fp, NULL, NULL, g_keypass);
++			fclose(fp);
++		}
++		if (tmpkey) {
++			const char *kt;
++
++			kt = EVP_PKEY_get0_type_name(tmpkey);
++			if (kt && strncmp(kt, "ML-DSA", 6) == 0) {
++				log_info("Auto-promoting to v3 signatures for %s key\n", kt);
++				g_signature_version = SIGNATURE_V3;
++			}
++			EVP_PKEY_free(tmpkey);
++		}
++	}
++#endif
++
+ 	if (argv[optind] == NULL)
+ 		usage();
+ 	else
+-- 
+2.34.1

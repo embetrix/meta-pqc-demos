@@ -1,0 +1,69 @@
+header:
+  version: 14
+  includes:
+    - pqc-sign-keys.yml
+machine: qemux86-64
+distro: poky-bleeding
+target: pqc-demos-image
+repos:
+  meta-pqc-demos:
+  openembedded-core:
+    url: https://git.openembedded.org/openembedded-core.git
+    branch: master
+    path: "layers"
+    layers:
+      meta:
+      meta-skeleton:
+  bitbake:
+    url: https://git.openembedded.org/bitbake.git
+    branch: master
+    path: "layers/bitbake"
+    layers:
+      bitbake: disabled
+  meta-yocto:
+    url: https://git.yoctoproject.org/meta-yocto.git
+    branch: master
+    path: "layers/meta-yocto"
+    layers:
+      meta-poky:
+      meta-yocto-bsp:
+  meta-openembedded:
+    url: "https://github.com/openembedded/meta-openembedded.git"
+    branch: master
+    path: "layers/meta-openembedded"
+    layers:
+      meta-oe:
+      meta-python:
+      meta-networking:
+      meta-perl:
+      meta-python:
+      meta-multimedia:
+      meta-filesystems:
+      meta-webserver:
+  meta-security:
+    url: https://git.yoctoproject.org/meta-security
+    branch: master
+    path: "layers/meta-security"
+    layers:
+      .:
+      meta-integrity:
+local_conf_header:
+  standard: |
+    CONF_VERSION = "2"
+  configuration: |
+    INIT_MANAGER = "systemd"
+    DISTRO_FEATURES:append = " security integrity ima"
+  features: |
+     IMAGE_FEATURES += "allow-empty-password allow-root-login serial-autologin-root empty-root-password"
+  sanity: |
+     INHERIT:remove = "sanity"
+  mask: |
+     BBMASK += "recipes-sato/puzzles"
+  # ML-DSA-65 signatures are 3309 bytes, exceeding max inline xattr space (1024 inode).
+  # Use ea_inode feature to store large xattrs in separate inodes.
+  # ima-evm: |
+  #    INHERIT += "ima-evm-rootfs"
+  #    EXTRA_IMAGECMD:ext4 = "-O ea_inode"
+  extra: |
+     INHERIT += "rm_work"
+     KERNEL_MODULE_AUTOLOAD += "tun"
