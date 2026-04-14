@@ -5,6 +5,6 @@ local_conf_header:
   keys: |
     MODSIGN_PRIVKEY = "${PQC_DEMOS_BASE}/keys/devel/modsign/modsign-mldsa65.key"
     MODSIGN_X509    = "${PQC_DEMOS_BASE}/keys/devel/modsign/modsign-mldsa65.crt"
-    # IMA_EVM_PRIVKEY = "${PQC_DEMOS_BASE}/keys/devel/ima-evm/ima-evm-mldsa65.key"
-    # IMA_EVM_X509    = "${PQC_DEMOS_BASE}/keys/devel/ima-evm/ima-evm-mldsa65.der"
-    # IMA_EVM_ROOT_CA = "${PQC_DEMOS_BASE}/keys/devel/ima-evm/ima-evm-mldsa65-ca.crt"
+    IMA_EVM_PRIVKEY = "${PQC_DEMOS_BASE}/keys/devel/ima-evm/ima-evm-mldsa65.key"
+    IMA_EVM_X509    = "${PQC_DEMOS_BASE}/keys/devel/ima-evm/ima-evm-mldsa65.der"
+    IMA_EVM_ROOT_CA = "${PQC_DEMOS_BASE}/keys/devel/ima-evm/ima-evm-mldsa65-ca.crt"

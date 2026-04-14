@@ -1,18 +1,18 @@
 # meta-pqc-demos
 
-Yocto layer dedicated to Post-Quantum Cryptography and end-to-end demos,
+Yocto/Openembedded layer dedicated to Post-Quantum Cryptography and end-to-end demos,
 built on top of `poky-bleeding` and the `linux-7.x` kernel series.
 It integrates PQC across the `linux kernel`, `OpenSSL` and `OpenSSH`
 primarily around ML-DSA and ML-KEM.
 
 ## What this demonstrates
 
-### linux v7.x PQC support 
+### linux v7.x kernel PQC support 
 - Kernel module signature verification with PQC signatures via the new:
   `CONFIG_MODULE_SIG_KEY_TYPE_MLDSA_{44,65,87}` options.
 - `CONFIG_MODULE_SIG_ENFORCE=y` unsigned or invalidly signed modules are rejected at load time.
 - In-kernel ML-DSA asymmetric key support via `CONFIG_CRYPTO_MLDSA` with X.509 and PKCS#7 parsers.
-- Scaffolding for IMA/EVM with ML-DSA (currently not working yet and disabled).
+- Scaffolding for IMA/EVM with ML-DSA (currently not working yet).
 
 ### Userspace PQC support
 - `OpenSSL` ships with native ML-KEM / ML-DSA / SLH-DSA support, no
@@ -41,7 +41,7 @@ KAS_MACHINE=qemux86-64 kas build kas-pqc-demos.yml
 KAS_MACHINE=qemux86-64 kas shell kas-pqc-demos.yml \
                        -c 'runqemu kvm serialstdio nographic snapshot \
                        qemuparams="-m 1024" \
-                       bootparams="ima_policy=tcb ima_appraise=off evm=off'
+                       bootparams="ima_policy=tcb ima_appraise=enforce evm=off"'
 ```
 
 ## Verifying on the target
@@ -90,6 +90,24 @@ signature:      55:05:53:EB:AA:30:3D:39:76:74:4B:DF:16:A9:B9:EB:7C:DA:8A:55:
                 FC:26:5B:C2:B6:AB:71:B3:0E:A2:6C:A1:78:41:BA:DB:22:29:72:1E:
                 91:E1:28:73:38:16:5B:F0:39:DD:10:BD:FE:C6:05:72:07:5A:DD:5C:
                 ...
+```
+
+### IMA/EVM
+
+The image boots with the built-in `tcb` measurement policy attached via the
+`ima_policy=tcb` kernel cmdline (see the `runqemu` invocation above).
+Appraisal with ML-DSA signatures is still WIP pending the in-kernel verifier.
+
+Inspect IMA/EVM xattrs on a file:
+
+```
+getfattr -m - -d /bin/ls   # security.ima / security.evm
+```
+
+Kernel-side integrity messages:
+
+```
+dmesg | grep -Ei 'ima|evm|integrity'
 ```
 
 ### OpenSSL with PQC
@@ -164,7 +182,6 @@ debug1: SSH2_MSG_NEWKEYS received
 Authenticated to localhost ([::1]:22) using "none".
 Last login: Tue Apr 14 17:01:19 2026 from ::1
 </pre>
-
 
 ## Tested Machines
 

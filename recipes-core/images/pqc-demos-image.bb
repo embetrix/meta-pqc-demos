@@ -12,4 +12,5 @@ IMAGE_INSTALL += " \
 	openssl \
 	attr \
 	keyutils \
+	ima-evm-keys \
 	"
