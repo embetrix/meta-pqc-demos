@@ -8,9 +8,15 @@ IMAGE_FEATURES:append = " ssh-server-openssh"
 
 IMAGE_INSTALL += " \
 	leancrypto \
+	leancrypto-tests \
 	curl \
-	openssl \
+	openssl-bin \
 	attr \
 	keyutils \
 	ima-evm-keys \
+	nginx \
+	openvpn \
+	nginx \
+	mosquitto \
+	mosquitto-clients
 	"
